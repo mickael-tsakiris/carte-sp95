@@ -8,57 +8,50 @@
 <title>TotalEnergies SP95 — Paris 17 / Bercheres</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+*{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,'Inter',system-ui,sans-serif;background:#FAF8F5;height:100vh;height:100dvh;display:flex;flex-direction:column}
 .header{background:#1a2332;color:#FAF8F5;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .header h1{font-size:17px;font-weight:600}
 .header .sub{font-size:11px;color:rgba(250,248,245,0.5);margin-top:2px}
 .header .right{text-align:right;flex-shrink:0}
-.header .count{font-size:28px;font-weight:700;color:#D4816B}
+.header .count{font-size:28px;font-weight:700;color:#2ecc71}
 .header .label{font-size:9px;color:rgba(250,248,245,0.5);text-transform:uppercase;letter-spacing:0.08em}
 .main{display:flex;flex:1;overflow:hidden;position:relative}
 #map{flex:1;min-width:0}
 .sidebar{width:360px;flex-shrink:0;background:white;border-left:1px solid #E5DDD3;display:flex;flex-direction:column;overflow:hidden}
 .sidebar-header{padding:16px 20px 12px;border-bottom:1px solid #E5DDD3;display:flex;justify-content:space-between;align-items:center}
-.sidebar-header h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#D4816B}
-.refresh-btn{font-size:11px;color:#1a2332;background:#F5F0EB;border:none;padding:6px 14px;border-radius:20px;cursor:pointer;font-weight:500}
-.refresh-btn:hover{background:#EDE8E3}
-.refresh-btn.loading{opacity:0.5}
+.sidebar-header h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#2ecc71}
 .sidebar-list{overflow-y:auto;flex:1}
 .card{padding:14px 20px;border-bottom:1px solid #F0EEE9;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background 0.15s}
 .card:hover{background:#FAF8F5}
 .card .left{flex:1;min-width:0}
 .card .name{font-size:14px;font-weight:600;color:#1a2332;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card .addr{font-size:11px;color:#999;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .addr{font-size:11px;color:#999;margin-top:1px}
 .card .right{text-align:right;flex-shrink:0;margin-left:12px}
-.card .dist{font-size:13px;font-weight:600;color:#1a2332}
-.card .dist-label{font-size:10px;color:#999}
-.card .status{font-size:10px;margin-top:4px;font-weight:600}
-.status-ok{color:#2ecc71}
-.status-unknown{color:#f39c12}
-.status-rupture{color:#e74c3c}
+.card .prix{font-size:18px;font-weight:700;color:#1a2332}
+.card .carb{font-size:10px;color:#2ecc71;font-weight:600;margin-top:2px}
+.card .dist{font-size:11px;color:#999;margin-top:2px}
 .leaflet-popup-content{font-family:-apple-system,'Inter',sans-serif;font-size:14px;line-height:1.5;min-width:220px}
 .pv{font-weight:700;font-size:16px;color:#1a2332}
 .pa{font-size:12px;color:#6B6B6B;margin:2px 0 8px}
-.pstatus{font-size:13px;font-weight:600;margin:4px 0}
-.pprix{font-size:11px;color:#999}
+.pprix{font-size:22px;font-weight:700;color:#1a2332;margin:4px 0}
+.pcarb{font-size:12px;font-weight:600;color:#2ecc71;margin-bottom:4px}
 .pd{font-size:12px;background:#F5F0EB;display:inline-block;padding:2px 8px;border-radius:4px;margin-top:4px}
+.pm{font-size:10px;color:#999;margin-top:6px}
 .pnav{display:inline-block;margin-top:10px;background:#1a2332;color:white;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none}
 .locate-btn{position:absolute;bottom:24px;right:24px;z-index:999;width:44px;height:44px;background:white;border:none;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center}
 .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#1a2332;color:white;padding:8px 20px;border-radius:20px;font-size:12px;font-weight:500;z-index:2000;opacity:0;transition:opacity 0.3s;pointer-events:none}
 .toast.show{opacity:1}
-.legend{position:absolute;bottom:24px;left:16px;z-index:999;background:white;padding:12px 16px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);font-size:11px;line-height:1.8}
-.legend-item{display:flex;align-items:center;gap:6px}
-.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.badge{position:absolute;bottom:24px;left:16px;z-index:999;background:white;padding:10px 14px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);font-size:11px;line-height:1.6;display:flex;align-items:center;gap:8px}
+.badge-dot{width:10px;height:10px;border-radius:50%;background:#2ecc71;flex-shrink:0}
 @media(max-width:900px){
   .sidebar{display:none}
-  .main{flex-direction:column}
   .sheet{position:fixed;bottom:0;left:0;right:0;background:white;border-radius:16px 16px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,0.15);z-index:1000;max-height:45dvh;transform:translateY(calc(100% - 44px));transition:transform 0.3s}
   .sheet.open{transform:translateY(0)}
   .sheet-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:10px auto;cursor:pointer}
-  .sheet-list-m{overflow-y:auto;max-height:calc(45dvh - 80px);-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom,16px)}
+  .sheet-list-m{overflow-y:auto;max-height:calc(45dvh - 70px);-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom,16px)}
   .locate-btn{bottom:56px;right:16px}
-  .legend{bottom:56px;left:10px;font-size:10px;padding:8px 12px}
+  .badge{bottom:56px;left:10px;font-size:10px;padding:8px 10px}
 }
 </style>
 </head>
@@ -66,89 +59,44 @@ body{font-family:-apple-system,'Inter',system-ui,sans-serif;background:#FAF8F5;h
 <div class="header">
   <div>
     <h1>TotalEnergies — Paris 17 / Bercheres</h1>
-    <div class="sub" id="lastUpdate">Chargement des donnees...</div>
+    <div class="sub" id="lastUpdate">SP95 et E10 confirmes — source: prix-carburants.gouv.fr</div>
   </div>
   <div class="right">
-    <div class="count" id="stationCount">—</div>
-    <div class="label">stations</div>
+    <div class="count" id="stationCount">9</div>
+    <div class="label">stations confirmees</div>
   </div>
 </div>
 <div class="main">
   <div id="map"></div>
   <button class="locate-btn" onclick="locateMe()" title="Ma position">&#9737;</button>
-  <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:#2ecc71"></div> SP95 confirme</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#f39c12"></div> Statut inconnu</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#e74c3c"></div> Rupture SP95</div>
-  </div>
-  <!-- Desktop sidebar -->
+  <div class="badge"><div class="badge-dot"></div>SP95/E10 confirme — donnees gouv</div>
   <div class="sidebar">
-    <div class="sidebar-header">
-      <h2>Stations TotalEnergies</h2>
-      <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">Actualiser</button>
-    </div>
+    <div class="sidebar-header"><h2>SP95/E10 confirme</h2></div>
     <div class="sidebar-list" id="stationList"></div>
   </div>
 </div>
-<!-- Mobile bottom sheet -->
 <div class="sheet" id="sheet" style="display:none">
-  <div class="sheet-handle" onclick="toggleSheet()"></div>
-  <div class="sidebar-header">
-    <h2>Stations TotalEnergies</h2>
-    <button class="refresh-btn" onclick="refreshData()">Actualiser</button>
-  </div>
+  <div class="sheet-handle" onclick="document.getElementById('sheet').classList.toggle('open')"></div>
+  <div class="sidebar-header"><h2>SP95/E10 confirme</h2></div>
   <div class="sheet-list-m" id="stationListM"></div>
 </div>
 <div class="toast" id="toast"></div>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 var route=[[48.8876, 2.3225], [48.884, 2.28], [48.892, 2.24], [48.895, 2.19], [48.89, 2.14], [48.88, 2.05], [48.87, 1.95], [48.86, 1.85], [48.85, 1.75], [48.845, 1.65], [48.843, 1.58], [48.842, 1.542]];
-var map=L.map("map",{zoomControl:true}).setView([48.79,1.9],10);
-L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a> | prix-carburants.gouv.fr',subdomains:"abcd",maxZoom:18}).addTo(map);
+var stations=[{"lat": 48.888, "lon": 2.188, "label": "93 Avenue Vladimir Illitch Lénine", "ville": "Nanterre", "prix": "2.129", "carburant": "E10", "maj": "2026-04-09 06:22:07", "cp": "92000", "dist": 0.7}, {"lat": 48.862, "lon": 2.216, "label": "138 BOULEVARD HENRI SELLIER", "ville": "Suresnes", "prix": "2.029", "carburant": "E10", "maj": "2026-04-03 11:22:39", "cp": "92150", "dist": 3.5}, {"lat": 48.9, "lon": 2.373, "label": "BLD DU PERIPHERIQUE INTERIEUR", "ville": "Paris", "prix": "1.990", "carburant": "E10", "maj": "2026-04-09 00:01:00", "cp": "75019", "dist": 3.9}, {"lat": 48.827841660000004, "lon": 2.2713364300000003, "label": "18-22 BLD DES FRERES VOISIN", "ville": "Issy-les-Moulineaux", "prix": "1.960", "carburant": "E10", "maj": "2026-04-09 11:51:10", "cp": "92130", "dist": 6.3}, {"lat": 48.951634109562, "lon": 2.2122929705522, "label": "5-7 BLD DES MARTYRS DE CHATEAUBRIAND", "ville": "Argenteuil", "prix": "1.950", "carburant": "E10", "maj": "2026-04-09 00:01:00", "cp": "95100", "dist": 6.4}, {"lat": 48.824, "lon": 2.128, "label": "100 Rue de Versailles", "ville": "Le Chesnay", "prix": "2.079", "carburant": "E10", "maj": "2026-04-07 11:05:40", "cp": "78150", "dist": 7.1}, {"lat": 48.94070118, "lon": 1.95295914, "label": "AUTOROUTE A13 - AIRE DE MORAINVILLIERS SUD", "ville": "MORAINVILLIERS", "prix": "1.990", "carburant": "E10", "maj": "2026-04-09 00:01:00", "cp": "78630", "dist": 7.7}, {"lat": 48.957, "lon": 2.284, "label": "239 Route d'Enghien", "ville": "Argenteuil", "prix": "2.069", "carburant": "E10", "maj": "2026-04-03 11:24:21", "cp": "95100", "dist": 7.8}, {"lat": 48.967, "lon": 2.262, "label": "38-42 BOULEVARD GABRIEL PERI", "ville": "SANNOIS", "prix": "1.990", "carburant": "SP95", "maj": "2026-04-07 07:48:53", "cp": "95110", "dist": 8.5}];
+var map=L.map("map",{zoomControl:true}).setView([48.86,1.93],11);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{attribution:'&copy; OSM &copy; CARTO | prix-carburants.gouv.fr',subdomains:"abcd",maxZoom:18}).addTo(map);
 L.polyline(route,{color:"#1a2332",weight:3,opacity:0.4,dashArray:"8,8"}).addTo(map);
-L.marker([48.8876,2.3225],{icon:L.divIcon({html:'<div style="background:white;color:#333;padding:5px 12px;border-radius:16px;font-size:13px;font-weight:500;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);border:1px solid rgba(0,0,0,0.08);font-family:-apple-system,sans-serif"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#e74c3c;margin-right:6px;vertical-align:middle"></span>Paris 17e</div>',className:'',iconAnchor:[50,16]})}).addTo(map);
-L.marker([48.842,1.542],{icon:L.divIcon({html:'<div style="background:white;color:#333;padding:5px 12px;border-radius:16px;font-size:13px;font-weight:500;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);border:1px solid rgba(0,0,0,0.08);font-family:-apple-system,sans-serif"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#e74c3c;margin-right:6px;vertical-align:middle"></span>Bercheres-sur-Vesgre</div>',className:'',iconAnchor:[80,16]})}).addTo(map);
+L.marker([48.8876,2.3225],{icon:L.divIcon({html:'<div style="background:white;color:#333;padding:5px 12px;border-radius:16px;font-size:13px;font-weight:500;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);border:1px solid rgba(0,0,0,0.08)"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#e74c3c;margin-right:6px;vertical-align:middle"></span>Paris 17e</div>',className:'',iconAnchor:[50,16]})}).addTo(map);
+L.marker([48.842,1.542],{icon:L.divIcon({html:'<div style="background:white;color:#333;padding:5px 12px;border-radius:16px;font-size:13px;font-weight:500;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);border:1px solid rgba(0,0,0,0.08)"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#e74c3c;margin-right:6px;vertical-align:middle"></span>Bercheres-sur-Vesgre</div>',className:'',iconAnchor:[85,16]})}).addTo(map);
 
-var markersLayer=L.layerGroup().addTo(map);
 var markerRefs=[];
 var myLocMarker=null;
 var isMobile=window.innerWidth<=900;
-
-// Show mobile sheet
 if(isMobile) document.getElementById("sheet").style.display="block";
 
 function showToast(m){var t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(function(){t.classList.remove("show")},2500)}
-function toggleSheet(){document.getElementById("sheet").classList.toggle("open")}
-
-// OSM TotalEnergies stations (pre-loaded)
-var osmStations=[{"lat": 48.8879656, "lon": 2.1873273, "label": "Total", "addr": "", "dist": 0.7}, {"lat": 48.8791063, "lon": 2.0969399, "label": "TotalEnergies Relais Parc de Marly", "addr": "Route de Versailles", "dist": 0.7}, {"lat": 48.8877119, "lon": 2.189373, "label": "TotalEnergies", "addr": "", "dist": 0.8}, {"lat": 48.8720375, "lon": 2.2998901, "label": "TotalEnergies", "addr": "Avenue des Champs-Élysées", "dist": 1.5}, {"lat": 48.872557, "lon": 2.1070355, "label": "TotalEnergies - Parc de Marly", "addr": "Route de Versailles, Marly-le-Roi, 78160", "dist": 1.5}, {"lat": 48.904331, "lon": 2.2566071, "label": "TotalEnergies", "addr": "", "dist": 1.7}, {"lat": 48.8862846, "lon": 1.9207007, "label": "Total energies", "addr": "", "dist": 2.1}, {"lat": 48.8999664, "lon": 2.3444709, "label": "TotalEnergies - Porte de Clignancourt", "addr": "", "dist": 2.1}, {"lat": 48.9037936, "lon": 2.0840496, "label": "Total", "addr": "Rue du Maréchal Foch, 78100", "dist": 2.2}, {"lat": 48.8684505, "lon": 2.1311033, "label": "Total Access", "addr": "", "dist": 2.3}, {"lat": 48.8682131, "lon": 2.1990926, "label": "TotalEnergies", "addr": "Avenue du Président Pompidou, Rueil-Malmaison, 92500", "dist": 2.9}, {"lat": 48.8681864, "lon": 2.1906573, "label": "TotalEnergies", "addr": "Avenue du 18 Juin 1940, Rueil-Malmaison, 92500", "dist": 2.9}, {"lat": 48.8642989, "lon": 2.2190581, "label": "Total", "addr": "", "dist": 3.2}, {"lat": 48.9193189, "lon": 2.3137624, "label": "Les Grésillons", "addr": "", "dist": 3.6}, {"lat": 48.8951406, "lon": 2.3724201, "label": "TotalEnergies", "addr": "Rue de Crimée, Paris, 75019", "dist": 3.7}, {"lat": 48.9133727, "lon": 2.3572834, "label": "TotalEnergies", "addr": "93200", "dist": 3.8}, {"lat": 48.9003252, "lon": 2.3734463, "label": "TotalEnergies", "addr": "", "dist": 4.0}, {"lat": 48.8549783, "lon": 2.2224884, "label": "Relais Saint-Cloud Dassault", "addr": "Quai Marcel Dassault, 92210", "dist": 4.2}, {"lat": 48.9327739, "lon": 2.1816465, "label": "TotalEnergies Access Relais la Vaudoire", "addr": "Boulevard Henri Barbusse, Houilles, 78800", "dist": 4.2}, {"lat": 48.936858, "lon": 2.2069554, "label": "TotalEnergies", "addr": "", "dist": 4.7}, {"lat": 48.8397287, "lon": 2.2311002, "label": "Total", "addr": "", "dist": 5.7}, {"lat": 48.9249098, "lon": 1.9764606, "label": "Total", "addr": "", "dist": 5.7}, {"lat": 48.7922983, "lon": 1.621245, "label": "Total Access", "addr": "", "dist": 5.8}, {"lat": 48.8015506, "lon": 1.8208234, "label": "TotalEnergies", "addr": "", "dist": 6.1}, {"lat": 48.8275666, "lon": 2.2716287, "label": "TotalEnergies access", "addr": "", "dist": 6.3}, {"lat": 48.9306788, "lon": 1.975096, "label": "TotalEnergies Access", "addr": "", "dist": 6.4}, {"lat": 48.9522885, "lon": 2.2130342, "label": "Relais Argenteuil du Val", "addr": "", "dist": 6.5}, {"lat": 48.8233013, "lon": 2.1278612, "label": "Total", "addr": "", "dist": 7.2}, {"lat": 48.954433, "lon": 2.2736297, "label": "TotalEnergies Access", "addr": "", "dist": 7.3}, {"lat": 48.9346389, "lon": 2.3941778, "label": "TotalEnergies", "addr": "93120", "dist": 7.4}, {"lat": 48.8457849, "lon": 2.4008634, "label": "Total Relais du Bel Air", "addr": "", "dist": 7.4}, {"lat": 48.8206459, "lon": 2.3247887, "label": "Total", "addr": "Avenue de la Porte d'Orléans, Paris, 75014", "dist": 7.4}, {"lat": 48.8614662, "lon": 2.4171635, "label": "TotalEnergies", "addr": "", "dist": 7.5}, {"lat": 48.8829283, "lon": 2.4266753, "label": "Total Access", "addr": "Rue de Paris, Les Lilas, 93260", "dist": 7.6}, {"lat": 48.940942, "lon": 1.9546657, "label": "Relais Total De Morainvilliers", "addr": "78630", "dist": 7.7}, {"lat": 48.9570356, "lon": 2.2803826, "label": "Relais TotalEnergies de Jolival", "addr": "", "dist": 7.8}, {"lat": 48.8185869, "lon": 2.1498086, "label": "TotalEnergies", "addr": "", "dist": 7.9}, {"lat": 48.9425731, "lon": 1.9504989, "label": "TotalEnergies", "addr": "", "dist": 8.0}, {"lat": 48.9634705, "lon": 2.2601378, "label": "TotalEnergies", "addr": "", "dist": 8.1}, {"lat": 48.8263743, "lon": 2.3872012, "label": "TotalEnergies", "addr": "", "dist": 8.3}, {"lat": 48.7988314, "lon": 2.0034224, "label": "Total", "addr": "78390", "dist": 8.4}, {"lat": 48.8011069, "lon": 2.0267846, "label": "Total Access", "addr": "", "dist": 8.4}, {"lat": 48.9711111, "lon": 2.1919317, "label": "TotalEnergies Contact", "addr": "Boulevard Clemenceau, Cormeilles-en-Parisis, 95240", "dist": 8.4}, {"lat": 48.9670131, "lon": 2.261865, "label": "TotalEnergies", "addr": "", "dist": 8.5}, {"lat": 48.8040888, "lon": 2.3253751, "label": "TotalEnergies", "addr": "Avenue Aristide Briand, Arcueil, 94110", "dist": 9.2}, {"lat": 48.7999215, "lon": 2.1325684, "label": "TotalEnergies", "addr": "", "dist": 9.8}, {"lat": 48.9565809, "lon": 1.8241436, "label": "Total", "addr": "", "dist": 10.9}, {"lat": 48.7478381, "lon": 1.2704657, "label": "Relais Total De La Couette", "addr": "28500", "dist": 22.5}];
-
-function renderStations(stations){
-  markersLayer.clearLayers();
-  markerRefs=[];
-  var html="";
-  stations.sort(function(a,b){return a.dist-b.dist});
-  stations.forEach(function(s,i){
-    var color=s.sp95==="ok"?"#2ecc71":s.sp95==="rupture"?"#e74c3c":"#f39c12";
-    var statusText=s.sp95==="ok"?"SP95 disponible":s.sp95==="rupture"?"SP95 en rupture":"Statut inconnu";
-    var statusClass=s.sp95==="ok"?"status-ok":s.sp95==="rupture"?"status-rupture":"status-unknown";
-    var icon=L.divIcon({html:'<div style="background:'+color+';width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div>',className:'',iconSize:[18,18],iconAnchor:[9,9]});
-    var m=L.marker([s.lat,s.lon],{icon:icon});
-    var nav="https://www.google.com/maps/dir/?api=1&destination="+s.lat+","+s.lon;
-    m.bindPopup('<div class="pv">'+s.label+'</div><div class="pa">'+s.addr+'</div><div class="pstatus '+statusClass+'">'+statusText+'</div>'+(s.prix?'<div class="pprix">'+s.prix+' EUR/L — maj '+s.maj+'</div>':'')+'<div class="pd">'+s.dist+' km du trajet</div><a class="pnav" href="'+nav+'" target="_blank" rel="noopener">Y aller</a>');
-    markersLayer.addLayer(m);
-    markerRefs.push(m);
-    html+='<div class="card" onclick="flyTo('+i+')"><div class="left"><div class="name">'+s.label+'</div><div class="addr">'+s.addr+'</div></div><div class="right"><div class="dist">'+s.dist+' km</div><div class="status '+statusClass+'">'+statusText+'</div></div></div>';
-  });
-  document.getElementById("stationList").innerHTML=html;
-  if(isMobile) document.getElementById("stationListM").innerHTML=html.replace(/flyTo/g,"flyToM");
-  document.getElementById("stationCount").textContent=stations.length;
-  document.getElementById("lastUpdate").textContent="Maj: "+new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+" — Sources: OSM + prix-carburants.gouv.fr";
-}
-
-function flyTo(i){var m=markerRefs[i];if(m){map.setView(m.getLatLng(),14);m.openPopup()}}
-function flyToM(i){flyTo(i);document.getElementById("sheet").classList.remove("open")}
 
 function locateMe(){
   if(!navigator.geolocation)return showToast("Geolocalisation non disponible");
@@ -160,47 +108,21 @@ function locateMe(){
   },function(){showToast("Position refusee")},{enableHighAccuracy:true});
 }
 
-// Cross-reference with government data for SP95 availability
-function refreshData(){
-  var btn=document.getElementById("refreshBtn");
-  btn.classList.add("loading");btn.textContent="...";
-  showToast("Croisement avec les donnees gouvernementales...");
-  var url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?select=id,latitude,longitude,sp95_prix,sp95_maj,sp95_rupture_type,sp95_rupture_debut&where=sp95_prix%20is%20not%20null%20or%20sp95_rupture_type%20is%20not%20null&limit=100&geofilter.distance=48.79,1.9,60000";
-  fetch(url).then(function(r){return r.json()}).then(function(data){
-    var govStations=data.results||[];
-    // Match OSM stations with gov data by proximity
-    osmStations.forEach(function(s){
-      s.sp95="unknown";s.prix="";s.maj="";
-      var bestDist=Infinity;
-      govStations.forEach(function(g){
-        if(!g.latitude||!g.longitude)return;
-        var glat=parseFloat(g.latitude)/100000;
-        var glon=parseFloat(g.longitude)/100000;
-        var d=Math.sqrt(Math.pow((s.lat-glat)*111,2)+Math.pow((s.lon-glon)*111*Math.cos(s.lat*Math.PI/180),2));
-        if(d<0.3&&d<bestDist){
-          bestDist=d;
-          if(g.sp95_rupture_type){s.sp95="rupture"}
-          else if(g.sp95_prix){s.sp95="ok";s.prix=g.sp95_prix.toFixed(3);s.maj=(g.sp95_maj||"").slice(0,10)}
-        }
-      });
-    });
-    renderStations(osmStations);
-    var ok=osmStations.filter(function(s){return s.sp95==="ok"}).length;
-    showToast(ok+" stations SP95 confirmees");
-    btn.classList.remove("loading");btn.textContent="Actualiser";
-  }).catch(function(){
-    showToast("Erreur reseau");
-    btn.classList.remove("loading");btn.textContent="Actualiser";
-    renderStations(osmStations);
-  });
-}
+function flyTo(i){var m=markerRefs[i];if(m){map.setView(m.getLatLng(),14);m.openPopup()}}
+function flyToM(i){flyTo(i);document.getElementById("sheet").classList.remove("open")}
 
-// Initial render + auto-refresh
-osmStations.forEach(function(s){s.sp95="unknown";s.prix="";s.maj=""});
-renderStations(osmStations);
+var html="";
+stations.forEach(function(s,i){
+  var icon=L.divIcon({html:'<div style="background:#2ecc71;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div>',className:'',iconSize:[22,22],iconAnchor:[11,11]});
+  var m=L.marker([s.lat,s.lon],{icon:icon}).addTo(map);
+  var nav="https://www.google.com/maps/dir/?api=1&destination="+s.lat+","+s.lon;
+  m.bindPopup('<div class="pv">TotalEnergies</div><div class="pa">'+s.label+(s.ville?', '+s.ville:'')+(s.cp?' ('+s.cp+')':'')+'</div><div class="pcarb">'+s.carburant+' disponible</div><div class="pprix">'+s.prix+' EUR/L</div><div class="pd">'+s.dist+' km du trajet</div><div class="pm">Maj: '+s.maj+'</div><a class="pnav" href="'+nav+'" target="_blank" rel="noopener">Y aller</a>');
+  markerRefs.push(m);
+  html+='<div class="card" onclick="flyTo('+i+')"><div class="left"><div class="name">'+(s.ville||s.label)+(s.cp?' ('+s.cp+')':'')+'</div><div class="addr">'+s.label+'</div></div><div class="right"><div class="prix">'+s.prix+'</div><div class="carb">'+s.carburant+'</div><div class="dist">'+s.dist+' km</div></div></div>';
+});
+document.getElementById("stationList").innerHTML=html;
+if(isMobile) document.getElementById("stationListM").innerHTML=html.replace(/flyTo\(/g,"flyToM(");
 map.fitBounds(L.polyline(route).getBounds().pad(0.15));
-refreshData();
-setInterval(refreshData,600000);
 
 if(isMobile){
   var sh=document.getElementById("sheet"),tsy=0;
