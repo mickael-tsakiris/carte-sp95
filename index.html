@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a2332">
+<title>SP95 — Paris 17 / Bercheres</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, 'Inter', sans-serif; background: #FAF8F5; overflow: hidden; height: 100vh; height: 100dvh; }
+
+/* Header */
+.header { background: #1a2332; color: #FAF8F5; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+.header h1 { font-size: 15px; font-weight: 600; line-height: 1.3; }
+.header .sub { font-size: 10px; color: rgba(250,248,245,0.5); margin-top: 2px; }
+.header .right { text-align: right; flex-shrink: 0; }
+.header .count { font-size: 24px; font-weight: 700; color: #D4816B; }
+.header .label { font-size: 9px; color: rgba(250,248,245,0.5); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* Map */
+#map { width: 100%; height: calc(100dvh - 56px); }
+
+/* Bottom sheet */
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 16px 16px 0 0; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); z-index: 1000; max-height: 50dvh; transform: translateY(calc(100% - 44px)); transition: transform 0.3s ease; }
+.sheet.open { transform: translateY(0); }
+.sheet-handle { width: 36px; height: 4px; background: #ddd; border-radius: 2px; margin: 10px auto; }
+.sheet-header { padding: 0 16px 8px; display: flex; justify-content: space-between; align-items: center; }
+.sheet-header h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #D4816B; }
+.sheet-header .refresh-btn { font-size: 11px; color: #1a2332; background: #F5F0EB; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: 500; }
+.sheet-header .refresh-btn.loading { opacity: 0.5; }
+.sheet-list { overflow-y: auto; max-height: calc(50dvh - 60px); -webkit-overflow-scrolling: touch; padding-bottom: env(safe-area-inset-bottom, 16px); }
+.card { padding: 14px 16px; border-bottom: 1px solid #F0EEE9; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.card:active { background: #FAF8F5; }
+.card .left { flex: 1; }
+.card .ville { font-size: 14px; font-weight: 600; color: #1a2332; }
+.card .adresse { font-size: 11px; color: #999; margin-top: 1px; }
+.card .meta { font-size: 10px; color: #ccc; margin-top: 3px; }
+.card .right { text-align: right; flex-shrink: 0; margin-left: 12px; }
+.card .prix { font-size: 20px; font-weight: 700; }
+.card .dist { font-size: 11px; color: #999; margin-top: 2px; }
+.prix-green { color: #2ecc71; }
+.prix-orange { color: #f39c12; }
+.prix-red { color: #e74c3c; }
+
+/* Toast */
+.toast { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); background: #1a2332; color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; z-index: 2000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+.toast.show { opacity: 1; }
+
+/* Popup */
+.leaflet-popup-content { font-family: -apple-system, 'Inter', sans-serif; font-size: 14px; line-height: 1.5; }
+.pv { font-weight: 700; font-size: 15px; color: #1a2332; }
+.pa { font-size: 12px; color: #6B6B6B; margin: 2px 0 6px; }
+.pp { font-size: 24px; font-weight: 700; }
+.pd { font-size: 12px; background: #F5F0EB; display: inline-block; padding: 2px 8px; border-radius: 4px; margin-top: 4px; }
+.pm { font-size: 10px; color: #999; margin-top: 6px; }
+.pnav { display: inline-block; margin-top: 8px; background: #1a2332; color: white; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; }
+
+/* Locate button */
+.locate-btn { position: fixed; bottom: 56px; right: 16px; z-index: 999; width: 44px; height: 44px; background: white; border: none; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>SP95 — Paris 17 / Bercheres</h1>
+    <div class="sub" id="lastUpdate">Chargement...</div>
+  </div>
+  <div class="right">
+    <div class="count" id="stationCount">-</div>
+    <div class="label">stations</div>
+  </div>
+</div>
+<div id="map"></div>
+<button class="locate-btn" onclick="locateMe()" title="Ma position">&#9737;</button>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle" onclick="toggleSheet()"></div>
+  <div class="sheet-header">
+    <h2>Stations SP95 sur le trajet</h2>
+    <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">Actualiser</button>
+  </div>
+  <div class="sheet-list" id="stationList"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// Route points
+var route = [
+  [48.8876,2.3225],[48.884,2.28],[48.892,2.24],[48.895,2.19],[48.89,2.14],
+  [48.88,2.05],[48.87,1.95],[48.86,1.85],[48.84,1.75],[48.80,1.65],
+  [48.77,1.60],[48.73,1.55],[48.6833,1.5167]
+];
+
+var map = L.map("map",{zoomControl:false}).setView([48.79,1.9],10);
+L.control.zoom({position:"topright"}).addTo(map);
+
+L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{
+  attribution:'OSM | prix-carburants.gouv.fr',
+  subdomains:"abcd",maxZoom:18
+}).addTo(map);
+
+// Route line
+L.polyline(route,{color:"#1a2332",weight:3,opacity:0.4,dashArray:"8,8"}).addTo(map);
+
+// Endpoints
+L.marker([48.8876,2.3225],{icon:L.divIcon({html:'<div style="background:#1a2332;color:white;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.3);">Paris 17e</div>',className:'',iconAnchor:[30,10]})}).addTo(map);
+L.marker([48.6833,1.5167],{icon:L.divIcon({html:'<div style="background:#1a2332;color:white;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.3);">Bercheres</div>',className:'',iconAnchor:[35,10]})}).addTo(map);
+
+var markersLayer = L.layerGroup().addTo(map);
+var markerRefs = [];
+var myLocMarker = null;
+
+function priceColor(p) { return p < 1.95 ? "#2ecc71" : p <= 2.10 ? "#f39c12" : "#e74c3c"; }
+function priceClass(p) { return p < 1.95 ? "prix-green" : p <= 2.10 ? "prix-orange" : "prix-red"; }
+
+function distToSegment(p,a,b) {
+  var ls=111,lo=111*Math.cos(p[0]*Math.PI/180);
+  var ax=(a[0]-p[0])*ls,ay=(a[1]-p[1])*lo,bx=(b[0]-p[0])*ls,by=(b[1]-p[1])*lo;
+  var dx=bx-ax,dy=by-ay;
+  if(!dx&&!dy) return Math.sqrt(ax*ax+ay*ay);
+  var t=Math.max(0,Math.min(1,(-ax*dx-ay*dy)/(dx*dx+dy*dy)));
+  var px=ax+t*dx,py=ay+t*dy;
+  return Math.sqrt(px*px+py*py);
+}
+
+function minDistRoute(p) {
+  var m=Infinity;
+  for(var i=0;i<route.length-1;i++) m=Math.min(m,distToSegment(p,route[i],route[i+1]));
+  return m;
+}
+
+function showToast(msg) {
+  var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
+  setTimeout(function(){t.classList.remove("show");},2500);
+}
+
+function renderStations(stations) {
+  markersLayer.clearLayers();
+  markerRefs = [];
+  var listHtml = "";
+
+  stations.sort(function(a,b){return a.dist-b.dist;});
+
+  stations.forEach(function(s,i) {
+    var c = priceColor(parseFloat(s.prix));
+    var icon = L.divIcon({
+      html:'<div style="background:'+c+';width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>',
+      className:'',iconSize:[18,18],iconAnchor:[9,9]
+    });
+    var m = L.marker([s.lat,s.lon],{icon:icon});
+    var navUrl = "https://www.google.com/maps/dir/?api=1&destination="+s.lat+","+s.lon;
+    m.bindPopup(
+      '<div class="pv">'+s.ville+'</div>'+
+      '<div class="pa">'+s.adresse+'</div>'+
+      '<div class="pp '+priceClass(parseFloat(s.prix))+'">'+s.prix+' EUR/L</div>'+
+      '<div class="pd">'+s.dist+' km du trajet</div>'+
+      '<div class="pm">Maj: '+s.maj+'</div>'+
+      '<a class="pnav" href="'+navUrl+'" target="_blank" rel="noopener">Y aller</a>'
+    );
+    markersLayer.addLayer(m);
+    markerRefs.push(m);
+
+    listHtml += '<div class="card" onclick="flyTo('+i+')">'+
+      '<div class="left"><div class="ville">'+s.ville+'</div><div class="adresse">'+s.adresse+'</div><div class="meta">Maj: '+s.maj+'</div></div>'+
+      '<div class="right"><div class="prix '+priceClass(parseFloat(s.prix))+'">'+s.prix+'</div><div class="dist">'+s.dist+' km</div></div></div>';
+  });
+
+  document.getElementById("stationList").innerHTML = listHtml;
+  document.getElementById("stationCount").textContent = stations.length;
+  document.getElementById("lastUpdate").textContent = "Maj: " + new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+}
+
+function flyTo(i) {
+  var m = markerRefs[i];
+  if(m) { map.setView(m.getLatLng(),14); m.openPopup(); }
+  document.getElementById("sheet").classList.remove("open");
+}
+
+function toggleSheet() {
+  document.getElementById("sheet").classList.toggle("open");
+}
+
+function locateMe() {
+  if(!navigator.geolocation) return showToast("Geolocalisation non disponible");
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    var ll = [pos.coords.latitude, pos.coords.longitude];
+    if(myLocMarker) map.removeLayer(myLocMarker);
+    myLocMarker = L.circleMarker(ll,{radius:8,fillColor:"#4285F4",fillOpacity:1,color:"white",weight:3}).addTo(map);
+    map.setView(ll,13);
+    showToast("Position mise a jour");
+  }, function(){showToast("Position refusee");}, {enableHighAccuracy:true});
+}
+
+// Fetch data from government API (via proxy to avoid CORS, or direct XML)
+function refreshData() {
+  var btn = document.getElementById("refreshBtn");
+  btn.classList.add("loading"); btn.textContent = "...";
+  showToast("Actualisation en cours...");
+
+  // Use the OPDS API endpoint which returns JSON
+  var url = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?select=id,latitude,longitude,adresse,ville,cp,sp95_prix,sp95_maj&where=sp95_prix%20is%20not%20null&limit=100&offset=0&refine=dep_name%3A%22Paris%22&refine=dep_name%3A%22Hauts-de-Seine%22&refine=dep_name%3A%22Yvelines%22&refine=dep_name%3A%22Eure-et-Loir%22&refine=dep_name%3A%22Seine-Saint-Denis%22&refine=dep_name%3A%22Val-d%27Oise%22";
+
+  fetch(url)
+    .then(function(r){return r.json();})
+    .then(function(data) {
+      var stations = [];
+      if(data.results) {
+        data.results.forEach(function(r) {
+          if(!r.latitude || !r.longitude || !r.sp95_prix) return;
+          var lat = r.latitude/100000, lon = r.longitude/100000;
+          var d = minDistRoute([lat,lon]);
+          if(d <= 10) {
+            stations.push({lat:lat,lon:lon,ville:r.ville||"",adresse:r.adresse||"",prix:r.sp95_prix.toFixed(3),maj:r.sp95_maj||"",cp:r.cp||"",dist:Math.round(d*10)/10});
+          }
+        });
+      }
+      if(stations.length > 0) {
+        renderStations(stations);
+        showToast(stations.length + " stations mises a jour");
+      } else {
+        showToast("Pas de nouvelles donnees, conservation des precedentes");
+      }
+      btn.classList.remove("loading"); btn.textContent = "Actualiser";
+    })
+    .catch(function(e) {
+      showToast("Erreur reseau — donnees conservees");
+      btn.classList.remove("loading"); btn.textContent = "Actualiser";
+    });
+}
+
+// Initial load from embedded data (fallback)
+var initialStations = [{"lat": 48.791, "lon": 1.628, "ville": "Maulette", "adresse": "Route de Gambais", "prix": "2.079", "maj": "2026-03-31 14:31:02", "cp": "78550", "dist": 0.3}, {"lat": 48.890454894335, "lon": 2.3033190283505998, "ville": "PARIS", "adresse": "3-5 AVENUE DE LA PORTE D'ASNIERES", "prix": "2.150", "maj": "2026-03-31 11:41:10", "cp": "75017", "dist": 0.5}, {"lat": 48.786, "lon": 1.614, "ville": "Maulette", "adresse": "Lieu-dit La Porte d'Épernon", "prix": "2.099", "maj": "2026-04-07 12:48:18", "cp": "78550", "dist": 0.6}, {"lat": 48.896, "lon": 2.107, "ville": "Le Pecq", "adresse": "Angle rue de Paris, Quai Maurice Berteaux", "prix": "1.990", "maj": "2026-04-03 08:08:11", "cp": "78230", "dist": 1.1}, {"lat": 48.87366, "lon": 2.292015, "ville": "Paris", "adresse": "4 AVENUE FOCH", "prix": "2.199", "maj": "2026-04-09 07:00:00", "cp": "75016", "dist": 1.3}, {"lat": 48.884, "lon": 2.364, "ville": "PARIS", "adresse": "1 Boulevard de la Chapelle", "prix": "2.299", "maj": "2026-04-08 06:00:00", "cp": "75010", "dist": 3.1}, {"lat": 48.861, "lon": 2.341, "ville": "PARIS", "adresse": "8,10,10bis Rue Bailleul", "prix": "2.540", "maj": "2026-04-08 15:37:33", "cp": "75001", "dist": 3.2}, {"lat": 48.91, "lon": 2.033, "ville": "CHAMBOURCY", "adresse": "RN 13", "prix": "2.073", "maj": "2026-04-09 08:20:00", "cp": "78240", "dist": 3.5}, {"lat": 48.91, "lon": 2.38, "ville": "AUBERVILLIERS", "adresse": "55 Rue de la Commune de Paris", "prix": "2.100", "maj": "2026-04-08 09:54:51", "cp": "93300", "dist": 4.9}, {"lat": 48.9327, "lon": 2.3044, "ville": "GENNEVILLIERS", "adresse": "192 Avenue Louis Roche", "prix": "2.149", "maj": "2026-04-04 09:45:00", "cp": "92230", "dist": 5.1}, {"lat": 48.912, "lon": 1.852, "ville": "MAULE", "adresse": "67 Boulevard Paul Barre", "prix": "2.105", "maj": "2026-03-19 11:56:14", "cp": "78580", "dist": 5.7}, {"lat": 48.948, "lon": 2.198, "ville": "SARTROUVILLE", "adresse": "AVENUE ROBERT SHUMANN", "prix": "1.983", "maj": "2026-04-04 08:30:00", "cp": "78500", "dist": 5.9}, {"lat": 48.839, "lon": 2.166, "ville": "VAUCRESSON", "adresse": "18 Boulevard de la République", "prix": "2.019", "maj": "2026-04-09 10:30:21", "cp": "92420", "dist": 5.9}, {"lat": 48.83468, "lon": 2.24193, "ville": "Boulogne-Billancourt", "adresse": "16 Avenue André Morizet", "prix": "1.990", "maj": "2026-03-30 18:30:46", "cp": "92100", "dist": 6.0}, {"lat": 48.892164616577, "lon": 1.6783590679534999, "ville": "SEPTEUIL", "adresse": "10 place de la mairie", "prix": "2.120", "maj": "2026-04-05 10:28:35", "cp": "78790", "dist": 7.7}, {"lat": 48.918, "lon": 2.418, "ville": "DRANCY", "adresse": "80, rue Saint Stenay", "prix": "2.090", "maj": "2026-04-09 08:20:00", "cp": "93700", "dist": 7.7}, {"lat": 48.949, "lon": 2.385, "ville": "STAINS", "adresse": "80 BOULEVARD MAXIME GORKI", "prix": "2.031", "maj": "2026-04-09 07:22:52", "cp": "93240", "dist": 8.2}, {"lat": 48.956, "lon": 2.042, "ville": "Carrières-sous-Poissy", "adresse": "55, Route d'Andresy", "prix": "2.059", "maj": "2026-04-09 08:50:14", "cp": "78955", "dist": 8.4}, {"lat": 48.967, "lon": 2.262, "ville": "SANNOIS", "adresse": "38-42 BOULEVARD GABRIEL PERI", "prix": "1.990", "maj": "2026-04-07 07:48:53", "cp": "95110", "dist": 8.5}, {"lat": 48.963, "lon": 2.339, "ville": "Montmagny", "adresse": "136 Rue Jules Ferry", "prix": "2.147", "maj": "2026-04-07 09:31:44", "cp": "95360", "dist": 8.5}, {"lat": 48.743, "lon": 1.425, "ville": "Cherisy", "adresse": "ZAC DES FORTS", "prix": "2.069", "maj": "2026-04-07 12:06:20", "cp": "28500", "dist": 8.9}, {"lat": 48.819, "lon": 2.396, "ville": "IVRY-SUR-SEINE", "adresse": "10 Rue Westermeyer", "prix": "2.036", "maj": "2026-04-09 08:44:22", "cp": "94200", "dist": 9.3}];
+renderStations(initialStations);
+map.fitBounds(L.polyline(route).getBounds().pad(0.15));
+
+// Auto-refresh every 10 minutes
+setInterval(refreshData, 600000);
+
+// Open sheet on mobile with swipe
+var sheet = document.getElementById("sheet");
+var touchStartY = 0;
+sheet.addEventListener("touchstart",function(e){touchStartY=e.touches[0].clientY;});
+sheet.addEventListener("touchmove",function(e){
+  var dy = touchStartY - e.touches[0].clientY;
+  if(dy > 30) sheet.classList.add("open");
+  if(dy < -30) sheet.classList.remove("open");
+});
+</script>
+</body>
+</html>
