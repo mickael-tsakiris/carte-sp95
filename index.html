@@ -4,250 +4,209 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1a2332">
 <title>TotalEnergies SP95 — Paris 17 / Bercheres</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body { font-family: -apple-system, 'Inter', sans-serif; background: #FAF8F5; overflow: hidden; height: 100vh; height: 100dvh; }
-
-/* Header */
-.header { background: #1a2332; color: #FAF8F5; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
-.header h1 { font-size: 15px; font-weight: 600; line-height: 1.3; }
-.header .sub { font-size: 10px; color: rgba(250,248,245,0.5); margin-top: 2px; }
-.header .right { text-align: right; flex-shrink: 0; }
-.header .count { font-size: 24px; font-weight: 700; color: #D4816B; }
-.header .label { font-size: 9px; color: rgba(250,248,245,0.5); text-transform: uppercase; letter-spacing: 0.08em; }
-
-/* Map */
-#map { width: 100%; height: calc(100dvh - 56px); }
-
-/* Bottom sheet */
-.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 16px 16px 0 0; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); z-index: 1000; max-height: 50dvh; transform: translateY(calc(100% - 44px)); transition: transform 0.3s ease; }
-.sheet.open { transform: translateY(0); }
-.sheet-handle { width: 36px; height: 4px; background: #ddd; border-radius: 2px; margin: 10px auto; }
-.sheet-header { padding: 0 16px 8px; display: flex; justify-content: space-between; align-items: center; }
-.sheet-header h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #D4816B; }
-.sheet-header .refresh-btn { font-size: 11px; color: #1a2332; background: #F5F0EB; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: 500; }
-.sheet-header .refresh-btn.loading { opacity: 0.5; }
-.sheet-list { overflow-y: auto; max-height: calc(50dvh - 60px); -webkit-overflow-scrolling: touch; padding-bottom: env(safe-area-inset-bottom, 16px); }
-.card { padding: 14px 16px; border-bottom: 1px solid #F0EEE9; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-.card:active { background: #FAF8F5; }
-.card .left { flex: 1; }
-.card .ville { font-size: 14px; font-weight: 600; color: #1a2332; }
-.card .adresse { font-size: 11px; color: #999; margin-top: 1px; }
-.card .meta { font-size: 10px; color: #ccc; margin-top: 3px; }
-.card .right { text-align: right; flex-shrink: 0; margin-left: 12px; }
-.card .prix { font-size: 20px; font-weight: 700; }
-.card .dist { font-size: 11px; color: #999; margin-top: 2px; }
-.prix-green { color: #2ecc71; }
-.prix-orange { color: #f39c12; }
-.prix-red { color: #e74c3c; }
-
-/* Toast */
-.toast { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); background: #1a2332; color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; z-index: 2000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
-.toast.show { opacity: 1; }
-
-/* Popup */
-.leaflet-popup-content { font-family: -apple-system, 'Inter', sans-serif; font-size: 14px; line-height: 1.5; }
-.pv { font-weight: 700; font-size: 15px; color: #1a2332; }
-.pa { font-size: 12px; color: #6B6B6B; margin: 2px 0 6px; }
-.pp { font-size: 24px; font-weight: 700; }
-.pd { font-size: 12px; background: #F5F0EB; display: inline-block; padding: 2px 8px; border-radius: 4px; margin-top: 4px; }
-.pm { font-size: 10px; color: #999; margin-top: 6px; }
-.pnav { display: inline-block; margin-top: 8px; background: #1a2332; color: white; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; }
-
-/* Locate button */
-.locate-btn { position: fixed; bottom: 56px; right: 16px; z-index: 999; width: 44px; height: 44px; background: white; border: none; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,'Inter',system-ui,sans-serif;background:#FAF8F5;height:100vh;height:100dvh;display:flex;flex-direction:column}
+.header{background:#1a2332;color:#FAF8F5;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.header h1{font-size:17px;font-weight:600}
+.header .sub{font-size:11px;color:rgba(250,248,245,0.5);margin-top:2px}
+.header .right{text-align:right;flex-shrink:0}
+.header .count{font-size:28px;font-weight:700;color:#D4816B}
+.header .label{font-size:9px;color:rgba(250,248,245,0.5);text-transform:uppercase;letter-spacing:0.08em}
+.main{display:flex;flex:1;overflow:hidden;position:relative}
+#map{flex:1;min-width:0}
+.sidebar{width:360px;flex-shrink:0;background:white;border-left:1px solid #E5DDD3;display:flex;flex-direction:column;overflow:hidden}
+.sidebar-header{padding:16px 20px 12px;border-bottom:1px solid #E5DDD3;display:flex;justify-content:space-between;align-items:center}
+.sidebar-header h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#D4816B}
+.refresh-btn{font-size:11px;color:#1a2332;background:#F5F0EB;border:none;padding:6px 14px;border-radius:20px;cursor:pointer;font-weight:500}
+.refresh-btn:hover{background:#EDE8E3}
+.refresh-btn.loading{opacity:0.5}
+.sidebar-list{overflow-y:auto;flex:1}
+.card{padding:14px 20px;border-bottom:1px solid #F0EEE9;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background 0.15s}
+.card:hover{background:#FAF8F5}
+.card .left{flex:1;min-width:0}
+.card .name{font-size:14px;font-weight:600;color:#1a2332;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .addr{font-size:11px;color:#999;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .right{text-align:right;flex-shrink:0;margin-left:12px}
+.card .dist{font-size:13px;font-weight:600;color:#1a2332}
+.card .dist-label{font-size:10px;color:#999}
+.card .status{font-size:10px;margin-top:4px;font-weight:600}
+.status-ok{color:#2ecc71}
+.status-unknown{color:#f39c12}
+.status-rupture{color:#e74c3c}
+.leaflet-popup-content{font-family:-apple-system,'Inter',sans-serif;font-size:14px;line-height:1.5;min-width:220px}
+.pv{font-weight:700;font-size:16px;color:#1a2332}
+.pa{font-size:12px;color:#6B6B6B;margin:2px 0 8px}
+.pstatus{font-size:13px;font-weight:600;margin:4px 0}
+.pprix{font-size:11px;color:#999}
+.pd{font-size:12px;background:#F5F0EB;display:inline-block;padding:2px 8px;border-radius:4px;margin-top:4px}
+.pnav{display:inline-block;margin-top:10px;background:#1a2332;color:white;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none}
+.locate-btn{position:absolute;bottom:24px;right:24px;z-index:999;width:44px;height:44px;background:white;border:none;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center}
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#1a2332;color:white;padding:8px 20px;border-radius:20px;font-size:12px;font-weight:500;z-index:2000;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.toast.show{opacity:1}
+.legend{position:absolute;bottom:24px;left:16px;z-index:999;background:white;padding:12px 16px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);font-size:11px;line-height:1.8}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+@media(max-width:900px){
+  .sidebar{display:none}
+  .main{flex-direction:column}
+  .sheet{position:fixed;bottom:0;left:0;right:0;background:white;border-radius:16px 16px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,0.15);z-index:1000;max-height:45dvh;transform:translateY(calc(100% - 44px));transition:transform 0.3s}
+  .sheet.open{transform:translateY(0)}
+  .sheet-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:10px auto;cursor:pointer}
+  .sheet-list-m{overflow-y:auto;max-height:calc(45dvh - 80px);-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom,16px)}
+  .locate-btn{bottom:56px;right:16px}
+  .legend{bottom:56px;left:10px;font-size:10px;padding:8px 12px}
+}
 </style>
 </head>
 <body>
 <div class="header">
   <div>
-    <h1>TotalEnergies SP95 — Paris 17 / Bercheres</h1>
-    <div class="sub" id="lastUpdate">Chargement...</div>
+    <h1>TotalEnergies — Paris 17 / Bercheres</h1>
+    <div class="sub" id="lastUpdate">Chargement des donnees...</div>
   </div>
   <div class="right">
-    <div class="count" id="stationCount">-</div>
+    <div class="count" id="stationCount">—</div>
     <div class="label">stations</div>
   </div>
 </div>
-<div id="map"></div>
-<button class="locate-btn" onclick="locateMe()" title="Ma position">&#9737;</button>
-<div class="sheet" id="sheet">
-  <div class="sheet-handle" onclick="toggleSheet()"></div>
-  <div class="sheet-header">
-    <h2>Stations SP95 sur le trajet</h2>
-    <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">Actualiser</button>
+<div class="main">
+  <div id="map"></div>
+  <button class="locate-btn" onclick="locateMe()" title="Ma position">&#9737;</button>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#2ecc71"></div> SP95 confirme</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f39c12"></div> Statut inconnu</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e74c3c"></div> Rupture SP95</div>
   </div>
-  <div class="sheet-list" id="stationList"></div>
+  <!-- Desktop sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>Stations TotalEnergies</h2>
+      <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">Actualiser</button>
+    </div>
+    <div class="sidebar-list" id="stationList"></div>
+  </div>
+</div>
+<!-- Mobile bottom sheet -->
+<div class="sheet" id="sheet" style="display:none">
+  <div class="sheet-handle" onclick="toggleSheet()"></div>
+  <div class="sidebar-header">
+    <h2>Stations TotalEnergies</h2>
+    <button class="refresh-btn" onclick="refreshData()">Actualiser</button>
+  </div>
+  <div class="sheet-list-m" id="stationListM"></div>
 </div>
 <div class="toast" id="toast"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// Route points
-var route = [
-  [48.8876,2.3225],[48.884,2.28],[48.892,2.24],[48.895,2.19],[48.89,2.14],
-  [48.88,2.05],[48.87,1.95],[48.86,1.85],[48.84,1.75],[48.80,1.65],
-  [48.77,1.60],[48.73,1.55],[48.6833,1.5167]
-];
-
-var map = L.map("map",{zoomControl:false}).setView([48.79,1.9],10);
-L.control.zoom({position:"topright"}).addTo(map);
-
-L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{
-  attribution:'OSM | prix-carburants.gouv.fr',
-  subdomains:"abcd",maxZoom:18
-}).addTo(map);
-
-// Route line
+var route=[[48.8876,2.3225],[48.884,2.28],[48.892,2.24],[48.895,2.19],[48.89,2.14],[48.88,2.05],[48.87,1.95],[48.86,1.85],[48.84,1.75],[48.80,1.65],[48.77,1.60],[48.73,1.55],[48.6833,1.5167]];
+var map=L.map("map",{zoomControl:true}).setView([48.79,1.9],10);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{attribution:'OSM | Donnees: prix-carburants.gouv.fr + OpenStreetMap',subdomains:"abcd",maxZoom:18}).addTo(map);
 L.polyline(route,{color:"#1a2332",weight:3,opacity:0.4,dashArray:"8,8"}).addTo(map);
+L.marker([48.8876,2.3225],{icon:L.divIcon({html:'<div style="background:#1a2332;color:white;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.3)">Paris 17e</div>',className:'',iconAnchor:[35,12]})}).addTo(map);
+L.marker([48.6833,1.5167],{icon:L.divIcon({html:'<div style="background:#1a2332;color:white;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.3)">Bercheres</div>',className:'',iconAnchor:[40,12]})}).addTo(map);
 
-// Endpoints
-L.marker([48.8876,2.3225],{icon:L.divIcon({html:'<div style="background:#1a2332;color:white;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.3);">Paris 17e</div>',className:'',iconAnchor:[30,10]})}).addTo(map);
-L.marker([48.6833,1.5167],{icon:L.divIcon({html:'<div style="background:#1a2332;color:white;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.3);">Bercheres</div>',className:'',iconAnchor:[35,10]})}).addTo(map);
+var markersLayer=L.layerGroup().addTo(map);
+var markerRefs=[];
+var myLocMarker=null;
+var isMobile=window.innerWidth<=900;
 
-var markersLayer = L.layerGroup().addTo(map);
-var markerRefs = [];
-var myLocMarker = null;
+// Show mobile sheet
+if(isMobile) document.getElementById("sheet").style.display="block";
 
-function priceColor(p) { return p < 1.95 ? "#2ecc71" : p <= 2.10 ? "#f39c12" : "#e74c3c"; }
-function priceClass(p) { return p < 1.95 ? "prix-green" : p <= 2.10 ? "prix-orange" : "prix-red"; }
+function showToast(m){var t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(function(){t.classList.remove("show")},2500)}
+function toggleSheet(){document.getElementById("sheet").classList.toggle("open")}
 
-function distToSegment(p,a,b) {
-  var ls=111,lo=111*Math.cos(p[0]*Math.PI/180);
-  var ax=(a[0]-p[0])*ls,ay=(a[1]-p[1])*lo,bx=(b[0]-p[0])*ls,by=(b[1]-p[1])*lo;
-  var dx=bx-ax,dy=by-ay;
-  if(!dx&&!dy) return Math.sqrt(ax*ax+ay*ay);
-  var t=Math.max(0,Math.min(1,(-ax*dx-ay*dy)/(dx*dx+dy*dy)));
-  var px=ax+t*dx,py=ay+t*dy;
-  return Math.sqrt(px*px+py*py);
-}
+// OSM TotalEnergies stations (pre-loaded)
+var osmStations=[{"lat": 48.8841896, "lon": 2.2703742, "label": "Total", "addr": "—", "dist": 0.2}, {"lat": 48.8919417, "lon": 2.1445257, "label": "Total", "addr": "—", "dist": 0.2}, {"lat": 48.8936776, "lon": 2.2602358, "label": "Total", "addr": "—", "dist": 0.6}, {"lat": 48.8879656, "lon": 2.1873273, "label": "Total", "addr": "—", "dist": 0.7}, {"lat": 48.8791063, "lon": 2.0969399, "label": "TotalEnergies Relais Parc de Marly", "addr": "Route de Versailles", "dist": 0.7}, {"lat": 48.8936328, "lon": 2.3152304, "label": "TotalEnergies", "addr": "—", "dist": 0.7}, {"lat": 48.8877119, "lon": 2.189373, "label": "TotalEnergies", "addr": "—", "dist": 0.8}, {"lat": 48.8969055, "lon": 2.2546411, "label": "Total - Relais de l'Alma", "addr": "Rue de l'Alma, Courbevoie, 92400", "dist": 0.8}, {"lat": 48.7922983, "lon": 1.621245, "label": "Total Access", "addr": "—", "dist": 0.8}, {"lat": 48.8779465, "lon": 2.1151804, "label": "Total Access", "addr": "—", "dist": 1.0}, {"lat": 48.8998404, "lon": 2.2608465, "label": "Total Access", "addr": "—", "dist": 1.3}, {"lat": 48.8816166, "lon": 2.2056225, "label": "Total Access", "addr": "—", "dist": 1.4}, {"lat": 48.8750408, "lon": 2.1181097, "label": "Relais Total De Louveciennes", "addr": "78430", "dist": 1.4}, {"lat": 48.9003162, "lon": 2.3177547, "label": "Total", "addr": "—", "dist": 1.4}, {"lat": 48.8501306, "lon": 1.8767805, "label": "Total", "addr": "—", "dist": 1.4}, {"lat": 48.8804945, "lon": 2.2062218, "label": "Total Access", "addr": "—", "dist": 1.5}, {"lat": 48.8720375, "lon": 2.2998901, "label": "TotalEnergies", "addr": "Avenue des Champs-Élysées", "dist": 1.5}, {"lat": 48.9018133, "lon": 2.2598069, "label": "TotalEnergies", "addr": "—", "dist": 1.5}, {"lat": 48.872557, "lon": 2.1070355, "label": "TotalEnergies - Parc de Marly", "addr": "Route de Versailles, Marly-le-Roi, 78160", "dist": 1.5}, {"lat": 48.8997729, "lon": 2.3300926, "label": "Relais Saint-Ouen Bichat", "addr": "—", "dist": 1.5}, {"lat": 48.8728471, "lon": 2.3211131, "label": "Total", "addr": "—", "dist": 1.6}, {"lat": 48.8753878, "lon": 2.1399799, "label": "Total", "addr": "—", "dist": 1.6}, {"lat": 48.904331, "lon": 2.2566071, "label": "TotalEnergies", "addr": "—", "dist": 1.7}, {"lat": 48.8996214, "lon": 2.075343, "label": "Total", "addr": "Rue du Président Roosevelt, Saint-Germain-en-Laye, 78100", "dist": 1.8}, {"lat": 48.908587, "lon": 2.1592119, "label": "TotalEnergies Access", "addr": "—", "dist": 1.8}, {"lat": 48.9001725, "lon": 2.3444887, "label": "Total", "addr": "—", "dist": 2.1}, {"lat": 48.8862846, "lon": 1.9207007, "label": "Total energies", "addr": "—", "dist": 2.1}, {"lat": 48.8999664, "lon": 2.3444709, "label": "TotalEnergies - Porte de Clignancourt", "addr": "—", "dist": 2.1}, {"lat": 48.9037936, "lon": 2.0840496, "label": "Total", "addr": "Rue du Maréchal Foch, 78100", "dist": 2.2}, {"lat": 48.9068186, "lon": 2.3004464, "label": "Total Access Pont de Clichy", "addr": "—", "dist": 2.3}, {"lat": 48.8684505, "lon": 2.1311033, "label": "Total Access", "addr": "—", "dist": 2.3}, {"lat": 48.9083599, "lon": 2.3438704, "label": "Total Michelet", "addr": "—", "dist": 2.8}, {"lat": 48.8682131, "lon": 2.1990926, "label": "TotalEnergies", "addr": "Avenue du Président Pompidou, Rueil-Malmaison, 92500", "dist": 2.9}, {"lat": 48.8681864, "lon": 2.1906573, "label": "TotalEnergies", "addr": "Avenue du 18 Juin 1940, Rueil-Malmaison, 92500", "dist": 2.9}, {"lat": 48.9194923, "lon": 2.2213306, "label": "Relais du Pont de Bezons", "addr": "Boulevard du Havre", "dist": 2.9}, {"lat": 48.859328, "lon": 2.3146561, "label": "Total", "addr": "—", "dist": 3.0}, {"lat": 48.859502, "lon": 2.3116861, "label": "Total", "addr": "—", "dist": 3.0}, {"lat": 48.8642989, "lon": 2.2190581, "label": "Total", "addr": "—", "dist": 3.2}, {"lat": 48.8801814, "lon": 2.3707442, "label": "Relais des Chaufourniers", "addr": "75019", "dist": 3.6}, {"lat": 48.8519985, "lon": 2.2908966, "label": "Total", "addr": "—", "dist": 3.6}, {"lat": 48.9193189, "lon": 2.3137624, "label": "Les Grésillons", "addr": "—", "dist": 3.6}, {"lat": 48.8951406, "lon": 2.3724201, "label": "TotalEnergies", "addr": "Rue de Crimée, Paris, 75019", "dist": 3.7}, {"lat": 48.9133727, "lon": 2.3572834, "label": "TotalEnergies", "addr": "93200", "dist": 3.8}, {"lat": 48.9003252, "lon": 2.3734463, "label": "TotalEnergies", "addr": "—", "dist": 4.0}, {"lat": 48.649771, "lon": 1.5379251, "label": "Total", "addr": "—", "dist": 4.0}, {"lat": 48.9002622, "lon": 2.3742541, "label": "TotalEnergies", "addr": "—", "dist": 4.0}, {"lat": 48.9007625, "lon": 2.3745675, "label": "TotalEnergies", "addr": "—", "dist": 4.1}, {"lat": 48.8549783, "lon": 2.2224884, "label": "Relais Saint-Cloud Dassault", "addr": "Quai Marcel Dassault, 92210", "dist": 4.2}, {"lat": 48.9327739, "lon": 2.1816465, "label": "TotalEnergies Access Relais la Vaudoire", "addr": "Boulevard Henri Barbusse, Houilles, 78800", "dist": 4.2}, {"lat": 48.9327971, "lon": 2.2325832, "label": "Total Access - Relais des Impressionnistes", "addr": "—", "dist": 4.5}, {"lat": 48.9355197, "lon": 2.2076713, "label": "Total Access", "addr": "Avenue Gabriel Péri, Bezons, 95870", "dist": 4.6}, {"lat": 48.9212575, "lon": 2.0343628, "label": "Total", "addr": "Avenue de la Maladrerie, Poissy, 78300", "dist": 4.7}, {"lat": 48.936858, "lon": 2.2069554, "label": "TotalEnergies", "addr": "—", "dist": 4.7}, {"lat": 48.8839109, "lon": 2.3897638, "label": "Total", "addr": "—", "dist": 4.9}, {"lat": 48.8287756, "lon": 1.9933104, "label": "Total", "addr": "—", "dist": 5.0}, {"lat": 48.9093094, "lon": 2.3862351, "label": "Total", "addr": "—", "dist": 5.2}, {"lat": 48.9318798, "lon": 2.2900459, "label": "Total Access", "addr": "—", "dist": 5.2}, {"lat": 48.8361171, "lon": 2.0959879, "label": "Total Access", "addr": "Rue De Maule, Rocquencourt, 78150", "dist": 5.4}, {"lat": 48.8387525, "lon": 2.2535353, "label": "Total Porte Saint-Cloud", "addr": "—", "dist": 5.4}, {"lat": 48.8346767, "lon": 2.266146, "label": "Relais Total Du Pont Aval", "addr": "75015", "dist": 5.6}, {"lat": 48.8015506, "lon": 1.8208234, "label": "TotalEnergies", "addr": "—", "dist": 5.6}, {"lat": 48.937016, "lon": 2.2765812, "label": "Total", "addr": "—", "dist": 5.6}, {"lat": 48.9250689, "lon": 1.993096, "label": "TotalEnergies Access", "addr": "Route de Quarante Sous, Orgeval, 78630", "dist": 5.6}, {"lat": 48.9447232, "lon": 2.207023, "label": "Total Access", "addr": "Rue des Grives, Argenteuil, 95100", "dist": 5.6}, {"lat": 48.8397287, "lon": 2.2311002, "label": "Total", "addr": "—", "dist": 5.7}, {"lat": 48.9249098, "lon": 1.9764606, "label": "Total", "addr": "—", "dist": 5.7}, {"lat": 48.9432286, "lon": 2.1290701, "label": "Total Access", "addr": "Route de Poissy, Le Mesnil-le-Roi", "dist": 6.0}, {"lat": 48.8358862, "lon": 2.238668, "label": "Total Excellium", "addr": "—", "dist": 6.0}, {"lat": 48.8348307, "lon": 2.2419398, "label": "TotalEnergies", "addr": "—", "dist": 6.0}, {"lat": 48.8315802, "lon": 2.3158225, "label": "Total", "addr": "—", "dist": 6.1}, {"lat": 48.8275666, "lon": 2.2716287, "label": "TotalEnergies access", "addr": "—", "dist": 6.3}, {"lat": 48.9306788, "lon": 1.975096, "label": "TotalEnergies Access", "addr": "—", "dist": 6.4}, {"lat": 48.9516046, "lon": 2.2123221, "label": "Relais Argenteuil Chateaubriant", "addr": "Boulevard des Martyrs de Châteaubriant, Argenteuil, 95100", "dist": 6.4}, {"lat": 48.8350223, "lon": 2.3575595, "label": "Total", "addr": "Boulevard de l'Hôpital, Paris, 75013", "dist": 6.4}, {"lat": 48.8711283, "lon": 2.4085012, "label": "Total Mortier", "addr": "—", "dist": 6.5}, {"lat": 48.9522885, "lon": 2.2130342, "label": "Relais Argenteuil du Val", "addr": "—", "dist": 6.5}, {"lat": 48.8710743, "lon": 2.4084622, "label": "Total", "addr": "—", "dist": 6.5}, {"lat": 48.8045313, "lon": 1.8957886, "label": "Total Access", "addr": "Route du Pontel, Jouars-Pontchartrain, 78760", "dist": 6.6}, {"lat": 48.9003527, "lon": 2.4110933, "label": "Total Access", "addr": "—", "dist": 6.6}, {"lat": 48.863682, "lon": 2.4079099, "label": "Total", "addr": "—", "dist": 6.8}, {"lat": 48.8635035, "lon": 2.4085486, "label": "Total Davout", "addr": "—", "dist": 6.8}, {"lat": 48.8316281, "lon": 2.35947, "label": "Total Access", "addr": "Paris, 75013", "dist": 6.8}, {"lat": 48.9484072, "lon": 2.3427555, "label": "Relais Total Claude Debussy", "addr": "Route de Saint-Leu, Épinay-sur-Seine, 93800", "dist": 6.9}, {"lat": 48.8229206, "lon": 2.2952295, "label": "Total", "addr": "—", "dist": 6.9}, {"lat": 48.8407841, "lon": 2.3912112, "label": "Total", "addr": "—", "dist": 7.2}, {"lat": 48.8233013, "lon": 2.1278612, "label": "Total", "addr": "—", "dist": 7.2}, {"lat": 48.8391937, "lon": 2.3887244, "label": "Total", "addr": "—", "dist": 7.2}, {"lat": 48.9337722, "lon": 2.3914468, "label": "Total", "addr": "93120", "dist": 7.2}, {"lat": 48.8213581, "lon": 2.3122044, "label": "Total", "addr": "—", "dist": 7.2}, {"lat": 48.954433, "lon": 2.2736297, "label": "TotalEnergies Access", "addr": "—", "dist": 7.3}, {"lat": 48.9346389, "lon": 2.3941778, "label": "TotalEnergies", "addr": "93120", "dist": 7.4}, {"lat": 48.8457849, "lon": 2.4008634, "label": "Total Relais du Bel Air", "addr": "—", "dist": 7.4}, {"lat": 48.8206459, "lon": 2.3247887, "label": "Total", "addr": "Avenue de la Porte d'Orléans, Paris, 75014", "dist": 7.4}, {"lat": 48.8614662, "lon": 2.4171635, "label": "TotalEnergies", "addr": "—", "dist": 7.5}, {"lat": 48.8829283, "lon": 2.4266753, "label": "Total Access", "addr": "Rue de Paris, Les Lilas, 93260", "dist": 7.6}, {"lat": 48.940942, "lon": 1.9546657, "label": "Relais Total De Morainvilliers", "addr": "78630", "dist": 7.7}, {"lat": 48.9570356, "lon": 2.2803826, "label": "Relais TotalEnergies de Jolival", "addr": "—", "dist": 7.8}, {"lat": 48.8844643, "lon": 2.4302306, "label": "Relais des Fontaines", "addr": "—", "dist": 7.9}, {"lat": 48.9484958, "lon": 2.3785316, "label": "Total", "addr": "—", "dist": 7.9}, {"lat": 48.8185869, "lon": 2.1498086, "label": "TotalEnergies", "addr": "—", "dist": 7.9}, {"lat": 48.9425731, "lon": 1.9504989, "label": "TotalEnergies", "addr": "—", "dist": 8.0}, {"lat": 48.9634705, "lon": 2.2601378, "label": "TotalEnergies", "addr": "—", "dist": 8.1}, {"lat": 48.8263743, "lon": 2.3872012, "label": "TotalEnergies", "addr": "—", "dist": 8.3}, {"lat": 48.8168431, "lon": 2.3604808, "label": "Relais Total Porte D'Italie", "addr": "—", "dist": 8.3}, {"lat": 48.7988314, "lon": 2.0034224, "label": "Total", "addr": "78390", "dist": 8.4}, {"lat": 48.8011069, "lon": 2.0267846, "label": "Total Access", "addr": "—", "dist": 8.4}, {"lat": 48.9711111, "lon": 2.1919317, "label": "TotalEnergies Contact", "addr": "Boulevard Clemenceau, Cormeilles-en-Parisis, 95240", "dist": 8.4}, {"lat": 48.9670131, "lon": 2.261865, "label": "TotalEnergies", "addr": "—", "dist": 8.5}, {"lat": 48.8132271, "lon": 2.2169188, "label": "Station Relais Total Meudon", "addr": "Route des Gardes, 92190", "dist": 8.9}, {"lat": 48.7983076, "lon": 2.0483718, "label": "Total", "addr": "—", "dist": 8.9}, {"lat": 48.9573852, "lon": 2.3824857, "label": "Total Access", "addr": "—", "dist": 8.9}, {"lat": 48.9144739, "lon": 2.4407328, "label": "Total Access", "addr": "—", "dist": 9.1}, {"lat": 48.8040888, "lon": 2.3253751, "label": "TotalEnergies", "addr": "Avenue Aristide Briand, Arcueil, 94110", "dist": 9.2}, {"lat": 48.966133, "lon": 2.3642552, "label": "Total Access", "addr": "—", "dist": 9.2}, {"lat": 48.8219928, "lon": 2.402704, "label": "Relais Total de Conflans", "addr": "Avenue de la Liberté, Charenton-le-Pont, 94220", "dist": 9.3}, {"lat": 48.9163791, "lon": 2.44367, "label": "Relais de Drancy", "addr": "—", "dist": 9.4}, {"lat": 48.7947734, "lon": 2.0695132, "label": "Total access - relais Epi d'Or", "addr": "—", "dist": 9.6}, {"lat": 48.7999215, "lon": 2.1325684, "label": "TotalEnergies", "addr": "—", "dist": 9.8}, {"lat": 48.8060686, "lon": 2.3762455, "label": "Total", "addr": "94200", "dist": 9.9}, {"lat": 48.9414792, "lon": 2.4314974, "label": "Total Access", "addr": "—", "dist": 9.9}];
 
-function minDistRoute(p) {
-  var m=Infinity;
-  for(var i=0;i<route.length-1;i++) m=Math.min(m,distToSegment(p,route[i],route[i+1]));
-  return m;
-}
-
-function showToast(msg) {
-  var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
-  setTimeout(function(){t.classList.remove("show");},2500);
-}
-
-function renderStations(stations) {
+function renderStations(stations){
   markersLayer.clearLayers();
-  markerRefs = [];
-  var listHtml = "";
-
-  stations.sort(function(a,b){return a.dist-b.dist;});
-
-  stations.forEach(function(s,i) {
-    var c = priceColor(parseFloat(s.prix));
-    var icon = L.divIcon({
-      html:'<div style="background:'+c+';width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>',
-      className:'',iconSize:[18,18],iconAnchor:[9,9]
-    });
-    var m = L.marker([s.lat,s.lon],{icon:icon});
-    var navUrl = "https://www.google.com/maps/dir/?api=1&destination="+s.lat+","+s.lon;
-    m.bindPopup(
-      "<div class='pv'>"+(s.name||s.brand||'TotalEnergies')+"</div>"+
-      '<div class="pa">"+(s.street||'')+(s.city?' — '+s.city:'')+"</div>'+
-      '<div class="pp '+priceClass(parseFloat(s.prix))+'">'+s.prix+' EUR/L</div>'+
-      '<div class="pd">'+s.dist+' km du trajet</div>'+
-      '<div class="pm">Maj: '+s.maj+'</div>'+
-      '<a class="pnav" href="'+navUrl+'" target="_blank" rel="noopener">Y aller</a>'
-    );
+  markerRefs=[];
+  var html="";
+  stations.sort(function(a,b){return a.dist-b.dist});
+  stations.forEach(function(s,i){
+    var color=s.sp95==="ok"?"#2ecc71":s.sp95==="rupture"?"#e74c3c":"#f39c12";
+    var statusText=s.sp95==="ok"?"SP95 disponible":s.sp95==="rupture"?"SP95 en rupture":"Statut inconnu";
+    var statusClass=s.sp95==="ok"?"status-ok":s.sp95==="rupture"?"status-rupture":"status-unknown";
+    var icon=L.divIcon({html:'<div style="background:'+color+';width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div>',className:'',iconSize:[18,18],iconAnchor:[9,9]});
+    var m=L.marker([s.lat,s.lon],{icon:icon});
+    var nav="https://www.google.com/maps/dir/?api=1&destination="+s.lat+","+s.lon;
+    m.bindPopup('<div class="pv">'+s.label+'</div><div class="pa">'+s.addr+'</div><div class="pstatus '+statusClass+'">'+statusText+'</div>'+(s.prix?'<div class="pprix">'+s.prix+' EUR/L — maj '+s.maj+'</div>':'')+'<div class="pd">'+s.dist+' km du trajet</div><a class="pnav" href="'+nav+'" target="_blank" rel="noopener">Y aller</a>');
     markersLayer.addLayer(m);
     markerRefs.push(m);
-
-    listHtml += '<div class="card" onclick="flyTo('+i+')">'+
-      '<div class="left"><div class="ville">'+(s.name||s.brand||'TotalEnergies')+'</div><div class="adresse">"+(s.street||'')+(s.city?' — '+s.city:'')+"</div><div class="meta">Maj: '+s.maj+'</div></div>'+
-      '<div class="right"><div class="prix '+priceClass(parseFloat(s.prix))+'">'+s.prix+'</div><div class="dist">'+s.dist+' km</div></div></div>';
+    html+='<div class="card" onclick="flyTo('+i+')"><div class="left"><div class="name">'+s.label+'</div><div class="addr">'+s.addr+'</div></div><div class="right"><div class="dist">'+s.dist+' km</div><div class="status '+statusClass+'">'+statusText+'</div></div></div>';
   });
-
-  document.getElementById("stationList").innerHTML = listHtml;
-  document.getElementById("stationCount").textContent = stations.length;
-  document.getElementById("lastUpdate").textContent = "Maj: " + new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  document.getElementById("stationList").innerHTML=html;
+  if(isMobile) document.getElementById("stationListM").innerHTML=html.replace(/flyTo/g,"flyToM");
+  document.getElementById("stationCount").textContent=stations.length;
+  document.getElementById("lastUpdate").textContent="Maj: "+new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+" — Sources: OSM + prix-carburants.gouv.fr";
 }
 
-function flyTo(i) {
-  var m = markerRefs[i];
-  if(m) { map.setView(m.getLatLng(),14); m.openPopup(); }
-  document.getElementById("sheet").classList.remove("open");
+function flyTo(i){var m=markerRefs[i];if(m){map.setView(m.getLatLng(),14);m.openPopup()}}
+function flyToM(i){flyTo(i);document.getElementById("sheet").classList.remove("open")}
+
+function locateMe(){
+  if(!navigator.geolocation)return showToast("Geolocalisation non disponible");
+  navigator.geolocation.getCurrentPosition(function(p){
+    var ll=[p.coords.latitude,p.coords.longitude];
+    if(myLocMarker)map.removeLayer(myLocMarker);
+    myLocMarker=L.circleMarker(ll,{radius:8,fillColor:"#4285F4",fillOpacity:1,color:"white",weight:3}).addTo(map);
+    map.setView(ll,13);showToast("Position mise a jour");
+  },function(){showToast("Position refusee")},{enableHighAccuracy:true});
 }
 
-function toggleSheet() {
-  document.getElementById("sheet").classList.toggle("open");
-}
-
-function locateMe() {
-  if(!navigator.geolocation) return showToast("Geolocalisation non disponible");
-  navigator.geolocation.getCurrentPosition(function(pos) {
-    var ll = [pos.coords.latitude, pos.coords.longitude];
-    if(myLocMarker) map.removeLayer(myLocMarker);
-    myLocMarker = L.circleMarker(ll,{radius:8,fillColor:"#4285F4",fillOpacity:1,color:"white",weight:3}).addTo(map);
-    map.setView(ll,13);
-    showToast("Position mise a jour");
-  }, function(){showToast("Position refusee");}, {enableHighAccuracy:true});
-}
-
-// Fetch data from government API (via proxy to avoid CORS, or direct XML)
-function refreshData() {
-  var btn = document.getElementById("refreshBtn");
-  btn.classList.add("loading"); btn.textContent = "...";
-  showToast("Actualisation en cours...");
-
-  // Use the OPDS API endpoint which returns JSON
-  var url = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?select=id,latitude,longitude,adresse,ville,cp,sp95_prix,sp95_maj&where=sp95_prix%20is%20not%20null&limit=100&offset=0&refine=dep_name%3A%22Paris%22&refine=dep_name%3A%22Hauts-de-Seine%22&refine=dep_name%3A%22Yvelines%22&refine=dep_name%3A%22Eure-et-Loir%22&refine=dep_name%3A%22Seine-Saint-Denis%22&refine=dep_name%3A%22Val-d%27Oise%22";
-
-  fetch(url)
-    .then(function(r){return r.json();})
-    .then(function(data) {
-      var stations = [];
-      if(data.results) {
-        data.results.forEach(function(r) {
-          if(!r.latitude || !r.longitude || !r.sp95_prix) return;
-          var lat = r.latitude/100000, lon = r.longitude/100000;
-          var d = minDistRoute([lat,lon]);
-          if(d <= 10) {
-            stations.push({lat:lat,lon:lon,ville:r.ville||"",adresse:r.adresse||"",prix:r.sp95_prix.toFixed(3),maj:r.sp95_maj||"",cp:r.cp||"",dist:Math.round(d*10)/10});
-          }
-        });
-      }
-      if(stations.length > 0) {
-        renderStations(stations);
-        showToast(stations.length + " stations mises a jour");
-      } else {
-        showToast("Pas de nouvelles donnees, conservation des precedentes");
-      }
-      btn.classList.remove("loading"); btn.textContent = "Actualiser";
-    })
-    .catch(function(e) {
-      showToast("Erreur reseau — donnees conservees");
-      btn.classList.remove("loading"); btn.textContent = "Actualiser";
+// Cross-reference with government data for SP95 availability
+function refreshData(){
+  var btn=document.getElementById("refreshBtn");
+  btn.classList.add("loading");btn.textContent="...";
+  showToast("Croisement avec les donnees gouvernementales...");
+  var url="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?select=id,latitude,longitude,sp95_prix,sp95_maj,sp95_rupture_type,sp95_rupture_debut&where=sp95_prix%20is%20not%20null%20or%20sp95_rupture_type%20is%20not%20null&limit=100&geofilter.distance=48.79,1.9,60000";
+  fetch(url).then(function(r){return r.json()}).then(function(data){
+    var govStations=data.results||[];
+    // Match OSM stations with gov data by proximity
+    osmStations.forEach(function(s){
+      s.sp95="unknown";s.prix="";s.maj="";
+      var bestDist=Infinity;
+      govStations.forEach(function(g){
+        if(!g.latitude||!g.longitude)return;
+        var glat=parseFloat(g.latitude)/100000;
+        var glon=parseFloat(g.longitude)/100000;
+        var d=Math.sqrt(Math.pow((s.lat-glat)*111,2)+Math.pow((s.lon-glon)*111*Math.cos(s.lat*Math.PI/180),2));
+        if(d<0.3&&d<bestDist){
+          bestDist=d;
+          if(g.sp95_rupture_type){s.sp95="rupture"}
+          else if(g.sp95_prix){s.sp95="ok";s.prix=g.sp95_prix.toFixed(3);s.maj=(g.sp95_maj||"").slice(0,10)}
+        }
+      });
     });
+    renderStations(osmStations);
+    var ok=osmStations.filter(function(s){return s.sp95==="ok"}).length;
+    showToast(ok+" stations SP95 confirmees");
+    btn.classList.remove("loading");btn.textContent="Actualiser";
+  }).catch(function(){
+    showToast("Erreur reseau");
+    btn.classList.remove("loading");btn.textContent="Actualiser";
+    renderStations(osmStations);
+  });
 }
 
-// Initial load from embedded data (fallback)
-var initialStations = [{"lat": 48.8841896, "lon": 2.2703742, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 0.2}, {"lat": 48.8919417, "lon": 2.1445257, "brand": "Total", "name": "", "street": "", "city": "", "postcode": "", "dist": 0.2}, {"lat": 48.8936776, "lon": 2.2602358, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 0.6}, {"lat": 48.8879656, "lon": 2.1873273, "brand": "TotalEnergies", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 0.7}, {"lat": 48.8791063, "lon": 2.0969399, "brand": "TotalEnergies", "name": "TotalEnergies Relais Parc de Marly", "street": "Route de Versailles", "city": "", "postcode": "", "dist": 0.7}, {"lat": 48.8936328, "lon": 2.3152304, "brand": "Total Access", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 0.7}, {"lat": 48.8877119, "lon": 2.189373, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 0.8}, {"lat": 48.8969055, "lon": 2.2546411, "brand": "Total", "name": "Total - Relais de l'Alma", "street": "Rue de l'Alma", "city": "Courbevoie", "postcode": "92400", "dist": 0.8}, {"lat": 48.7922983, "lon": 1.621245, "brand": "TotalEnergies", "name": "Total Access", "street": "", "city": "", "postcode": "", "dist": 0.8}, {"lat": 48.8779465, "lon": 2.1151804, "brand": "Total Access", "name": "Total Access", "street": "", "city": "", "postcode": "", "dist": 1.0}, {"lat": 48.8998404, "lon": 2.2608465, "brand": "Total Access", "name": "Total Access", "street": "", "city": "", "postcode": "", "dist": 1.3}, {"lat": 48.8816166, "lon": 2.2056225, "brand": "Total Access", "name": "Total Access", "street": "", "city": "", "postcode": "", "dist": 1.4}, {"lat": 48.8750408, "lon": 2.1181097, "brand": "Total", "name": "Relais Total De Louveciennes", "street": "", "city": "", "postcode": "78430", "dist": 1.4}, {"lat": 48.9003162, "lon": 2.3177547, "brand": "Total", "name": "", "street": "", "city": "", "postcode": "", "dist": 1.4}, {"lat": 48.8501306, "lon": 1.8767805, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 1.4}, {"lat": 48.8804945, "lon": 2.2062218, "brand": "Total Access", "name": "Total Access", "street": "", "city": "", "postcode": "", "dist": 1.5}, {"lat": 48.8720375, "lon": 2.2998901, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "Avenue des Champs-Élysées", "city": "", "postcode": "", "dist": 1.5}, {"lat": 48.9018133, "lon": 2.2598069, "brand": "Total", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 1.5}, {"lat": 48.872557, "lon": 2.1070355, "brand": "TotalEnergies", "name": "TotalEnergies - Parc de Marly", "street": "Route de Versailles", "city": "Marly-le-Roi", "postcode": "78160", "dist": 1.5}, {"lat": 48.8997729, "lon": 2.3300926, "brand": "Total", "name": "Relais Saint-Ouen Bichat", "street": "", "city": "", "postcode": "", "dist": 1.5}, {"lat": 48.8728471, "lon": 2.3211131, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 1.6}, {"lat": 48.8753878, "lon": 2.1399799, "brand": "Total", "name": "", "street": "", "city": "", "postcode": "", "dist": 1.6}, {"lat": 48.904331, "lon": 2.2566071, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 1.7}, {"lat": 48.8996214, "lon": 2.075343, "brand": "Total", "name": "Total", "street": "Rue du Président Roosevelt", "city": "Saint-Germain-en-Laye", "postcode": "78100", "dist": 1.8}, {"lat": 48.908587, "lon": 2.1592119, "brand": "Total Access", "name": "TotalEnergies Access", "street": "", "city": "", "postcode": "", "dist": 1.8}, {"lat": 48.9001725, "lon": 2.3444887, "brand": "Total", "name": "", "street": "", "city": "", "postcode": "", "dist": 2.1}, {"lat": 48.8862846, "lon": 1.9207007, "brand": "TotalEnergies", "name": "Total energies", "street": "", "city": "", "postcode": "", "dist": 2.1}, {"lat": 48.8999664, "lon": 2.3444709, "brand": "TotalEnergies", "name": "TotalEnergies - Porte de Clignancourt", "street": "", "city": "", "postcode": "", "dist": 2.1}, {"lat": 48.9037936, "lon": 2.0840496, "brand": "TotalEnergies", "name": "Total", "street": "Rue du Maréchal Foch", "city": "", "postcode": "78100", "dist": 2.2}, {"lat": 48.9068186, "lon": 2.3004464, "brand": "Total Access", "name": "Total Access Pont de Clichy", "street": "", "city": "", "postcode": "", "dist": 2.3}, {"lat": 48.8684505, "lon": 2.1311033, "brand": "TotalEnergies", "name": "Total Access", "street": "", "city": "", "postcode": "", "dist": 2.3}, {"lat": 48.9083599, "lon": 2.3438704, "brand": "Total", "name": "Total Michelet", "street": "", "city": "", "postcode": "", "dist": 2.8}, {"lat": 48.8682131, "lon": 2.1990926, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "Avenue du Président Pompidou", "city": "Rueil-Malmaison", "postcode": "92500", "dist": 2.9}, {"lat": 48.8681864, "lon": 2.1906573, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "Avenue du 18 Juin 1940", "city": "Rueil-Malmaison", "postcode": "92500", "dist": 2.9}, {"lat": 48.9194923, "lon": 2.2213306, "brand": "Total Access", "name": "Relais du Pont de Bezons", "street": "Boulevard du Havre", "city": "", "postcode": "", "dist": 2.9}, {"lat": 48.859328, "lon": 2.3146561, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 3.0}, {"lat": 48.859502, "lon": 2.3116861, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 3.0}, {"lat": 48.8642989, "lon": 2.2190581, "brand": "TotalEnergies", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 3.2}, {"lat": 48.8801814, "lon": 2.3707442, "brand": "Total", "name": "Relais des Chaufourniers", "street": "", "city": "", "postcode": "75019", "dist": 3.6}, {"lat": 48.8519985, "lon": 2.2908966, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 3.6}, {"lat": 48.9193189, "lon": 2.3137624, "brand": "TotalEnergies", "name": "Les Grésillons", "street": "", "city": "", "postcode": "", "dist": 3.6}, {"lat": 48.8951406, "lon": 2.3724201, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "Rue de Crimée", "city": "Paris", "postcode": "75019", "dist": 3.7}, {"lat": 48.9133727, "lon": 2.3572834, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "", "city": "", "postcode": "93200", "dist": 3.8}, {"lat": 48.9003252, "lon": 2.3734463, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 4.0}, {"lat": 48.649771, "lon": 1.5379251, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 4.0}, {"lat": 48.9002622, "lon": 2.3742541, "brand": "Total Access", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 4.0}, {"lat": 48.9007625, "lon": 2.3745675, "brand": "Total Access", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 4.1}, {"lat": 48.8549783, "lon": 2.2224884, "brand": "TotalEnergies", "name": "Relais Saint-Cloud Dassault", "street": "Quai Marcel Dassault", "city": "", "postcode": "92210", "dist": 4.2}, {"lat": 48.9327739, "lon": 2.1816465, "brand": "TotalEnergies", "name": "TotalEnergies Access Relais la Vaudoire", "street": "Boulevard Henri Barbusse", "city": "Houilles", "postcode": "78800", "dist": 4.2}, {"lat": 48.9327971, "lon": 2.2325832, "brand": "Total Access", "name": "Total Access - Relais des Impressionnistes", "street": "", "city": "", "postcode": "", "dist": 4.5}, {"lat": 48.9355197, "lon": 2.2076713, "brand": "Total Access", "name": "Total Access", "street": "Avenue Gabriel Péri", "city": "Bezons", "postcode": "95870", "dist": 4.6}, {"lat": 48.9212575, "lon": 2.0343628, "brand": "Total", "name": "Total", "street": "Avenue de la Maladrerie", "city": "Poissy", "postcode": "78300", "dist": 4.7}, {"lat": 48.936858, "lon": 2.2069554, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 4.7}, {"lat": 48.8839109, "lon": 2.3897638, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 4.9}, {"lat": 48.8287756, "lon": 1.9933104, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 5.0}, {"lat": 48.9093094, "lon": 2.3862351, "brand": "Total", "name": "", "street": "", "city": "", "postcode": "", "dist": 5.2}, {"lat": 48.9318798, "lon": 2.2900459, "brand": "Total Access", "name": "Total Access", "street": "", "city": "", "postcode": "", "dist": 5.2}, {"lat": 48.8361171, "lon": 2.0959879, "brand": "Total Access", "name": "Total Access", "street": "Rue De Maule", "city": "Rocquencourt", "postcode": "78150", "dist": 5.4}, {"lat": 48.8387525, "lon": 2.2535353, "brand": "Total", "name": "Total Porte Saint-Cloud", "street": "", "city": "", "postcode": "", "dist": 5.4}, {"lat": 48.8346767, "lon": 2.266146, "brand": "Total Access", "name": "Relais Total Du Pont Aval", "street": "", "city": "", "postcode": "75015", "dist": 5.6}, {"lat": 48.8015506, "lon": 1.8208234, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 5.6}, {"lat": 48.937016, "lon": 2.2765812, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 5.6}, {"lat": 48.9250689, "lon": 1.993096, "brand": "Total Access", "name": "TotalEnergies Access", "street": "Route de Quarante Sous", "city": "Orgeval", "postcode": "78630", "dist": 5.6}, {"lat": 48.9447232, "lon": 2.207023, "brand": "Total Access", "name": "Total Access", "street": "Rue des Grives", "city": "Argenteuil", "postcode": "95100", "dist": 5.6}, {"lat": 48.8397287, "lon": 2.2311002, "brand": "TotalEnergies", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 5.7}, {"lat": 48.9249098, "lon": 1.9764606, "brand": "TotalEnergies", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 5.7}, {"lat": 48.9432286, "lon": 2.1290701, "brand": "Total Access", "name": "Total Access", "street": "Route de Poissy", "city": "Le Mesnil-le-Roi", "postcode": "", "dist": 6.0}, {"lat": 48.8358862, "lon": 2.238668, "brand": "Total", "name": "Total Excellium", "street": "", "city": "", "postcode": "", "dist": 6.0}, {"lat": 48.8348307, "lon": 2.2419398, "brand": "Total", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 6.0}, {"lat": 48.8315802, "lon": 2.3158225, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 6.1}, {"lat": 48.8275666, "lon": 2.2716287, "brand": "TotalEnergies", "name": "TotalEnergies access", "street": "", "city": "", "postcode": "", "dist": 6.3}, {"lat": 48.9306788, "lon": 1.975096, "brand": "TotalEnergies", "name": "TotalEnergies Access", "street": "", "city": "", "postcode": "", "dist": 6.4}, {"lat": 48.9516046, "lon": 2.2123221, "brand": "Total Access", "name": "Relais Argenteuil Chateaubriant", "street": "Boulevard des Martyrs de Châteaubriant", "city": "Argenteuil", "postcode": "95100", "dist": 6.4}, {"lat": 48.8350223, "lon": 2.3575595, "brand": "Total", "name": "Total", "street": "Boulevard de l'Hôpital", "city": "Paris", "postcode": "75013", "dist": 6.4}, {"lat": 48.8711283, "lon": 2.4085012, "brand": "Total", "name": "Total Mortier", "street": "", "city": "", "postcode": "", "dist": 6.5}, {"lat": 48.9522885, "lon": 2.2130342, "brand": "TotalEnergies", "name": "Relais Argenteuil du Val", "street": "", "city": "", "postcode": "", "dist": 6.5}, {"lat": 48.8710743, "lon": 2.4084622, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 6.5}, {"lat": 48.8045313, "lon": 1.8957886, "brand": "Total Access", "name": "Total Access", "street": "Route du Pontel", "city": "Jouars-Pontchartrain", "postcode": "78760", "dist": 6.6}, {"lat": 48.9003527, "lon": 2.4110933, "brand": "Total Access", "name": "Total Access", "street": "", "city": "", "postcode": "", "dist": 6.6}, {"lat": 48.863682, "lon": 2.4079099, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 6.8}, {"lat": 48.8635035, "lon": 2.4085486, "brand": "Total", "name": "Total Davout", "street": "", "city": "", "postcode": "", "dist": 6.8}, {"lat": 48.8316281, "lon": 2.35947, "brand": "Total Access", "name": "Total Access", "street": "", "city": "Paris", "postcode": "75013", "dist": 6.8}, {"lat": 48.9484072, "lon": 2.3427555, "brand": "Total", "name": "Relais Total Claude Debussy", "street": "Route de Saint-Leu", "city": "Épinay-sur-Seine", "postcode": "93800", "dist": 6.9}, {"lat": 48.8229206, "lon": 2.2952295, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 6.9}, {"lat": 48.8407841, "lon": 2.3912112, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 7.2}, {"lat": 48.8233013, "lon": 2.1278612, "brand": "TotalEnergies", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 7.2}, {"lat": 48.8391937, "lon": 2.3887244, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 7.2}, {"lat": 48.9337722, "lon": 2.3914468, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "93120", "dist": 7.2}, {"lat": 48.8213581, "lon": 2.3122044, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 7.2}, {"lat": 48.954433, "lon": 2.2736297, "brand": "TotalEnergies", "name": "TotalEnergies Access", "street": "", "city": "", "postcode": "", "dist": 7.3}, {"lat": 48.9346389, "lon": 2.3941778, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "", "city": "", "postcode": "93120", "dist": 7.4}, {"lat": 48.8457849, "lon": 2.4008634, "brand": "TotalEnergies", "name": "Total Relais du Bel Air", "street": "", "city": "", "postcode": "", "dist": 7.4}, {"lat": 48.8206459, "lon": 2.3247887, "brand": "TotalEnergies", "name": "Total", "street": "Avenue de la Porte d'Orléans", "city": "Paris", "postcode": "75014", "dist": 7.4}, {"lat": 48.8614662, "lon": 2.4171635, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 7.5}, {"lat": 48.8829283, "lon": 2.4266753, "brand": "TotalEnergies", "name": "Total Access", "street": "Rue de Paris", "city": "Les Lilas", "postcode": "93260", "dist": 7.6}, {"lat": 48.940942, "lon": 1.9546657, "brand": "TotalEnergies", "name": "Relais Total De Morainvilliers", "street": "", "city": "", "postcode": "78630", "dist": 7.7}, {"lat": 48.9570356, "lon": 2.2803826, "brand": "TotalEnergies", "name": "Relais TotalEnergies de Jolival", "street": "", "city": "", "postcode": "", "dist": 7.8}, {"lat": 48.8844643, "lon": 2.4302306, "brand": "Total", "name": "Relais des Fontaines", "street": "", "city": "", "postcode": "", "dist": 7.9}, {"lat": 48.9484958, "lon": 2.3785316, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "", "dist": 7.9}, {"lat": 48.8185869, "lon": 2.1498086, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 7.9}, {"lat": 48.9425731, "lon": 1.9504989, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 8.0}, {"lat": 48.9634705, "lon": 2.2601378, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 8.1}, {"lat": 48.8263743, "lon": 2.3872012, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 8.3}, {"lat": 48.8168431, "lon": 2.3604808, "brand": "Total", "name": "Relais Total Porte D'Italie", "street": "", "city": "", "postcode": "", "dist": 8.3}, {"lat": 48.7988314, "lon": 2.0034224, "brand": "TotalEnergies", "name": "Total", "street": "", "city": "", "postcode": "78390", "dist": 8.4}, {"lat": 48.8011069, "lon": 2.0267846, "brand": "TotalEnergies", "name": "Total Access", "street": "", "city": "", "postcode": "", "dist": 8.4}, {"lat": 48.9711111, "lon": 2.1919317, "brand": "TotalEnergies", "name": "TotalEnergies Contact", "street": "Boulevard Clemenceau", "city": "Cormeilles-en-Parisis", "postcode": "95240", "dist": 8.4}, {"lat": 48.9670131, "lon": 2.261865, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 8.5}, {"lat": 48.8132271, "lon": 2.2169188, "brand": "Total", "name": "Station Relais Total Meudon", "street": "Route des Gardes", "city": "", "postcode": "92190", "dist": 8.9}, {"lat": 48.7983076, "lon": 2.0483718, "brand": "Total", "name": "", "street": "", "city": "", "postcode": "", "dist": 8.9}, {"lat": 48.9573852, "lon": 2.3824857, "brand": "Total Access", "name": "Total Access", "street": "", "city": "", "postcode": "", "dist": 8.9}, {"lat": 48.9144739, "lon": 2.4407328, "brand": "Total Access", "name": "Total Access", "street": "", "city": "", "postcode": "", "dist": 9.1}, {"lat": 48.8040888, "lon": 2.3253751, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "Avenue Aristide Briand", "city": "Arcueil", "postcode": "94110", "dist": 9.2}, {"lat": 48.966133, "lon": 2.3642552, "brand": "Total Access", "name": "Total Access", "street": "", "city": "", "postcode": "", "dist": 9.2}, {"lat": 48.8219928, "lon": 2.402704, "brand": "Total", "name": "Relais Total de Conflans", "street": "Avenue de la Liberté", "city": "Charenton-le-Pont", "postcode": "94220", "dist": 9.3}, {"lat": 48.9163791, "lon": 2.44367, "brand": "Total", "name": "Relais de Drancy", "street": "", "city": "", "postcode": "", "dist": 9.4}, {"lat": 48.7947734, "lon": 2.0695132, "brand": "Total Access", "name": "Total access - relais Epi d'Or", "street": "", "city": "", "postcode": "", "dist": 9.6}, {"lat": 48.7999215, "lon": 2.1325684, "brand": "TotalEnergies", "name": "TotalEnergies", "street": "", "city": "", "postcode": "", "dist": 9.8}, {"lat": 48.8060686, "lon": 2.3762455, "brand": "Total", "name": "Total", "street": "", "city": "", "postcode": "94200", "dist": 9.9}, {"lat": 48.9414792, "lon": 2.4314974, "brand": "Total Access", "name": "Total Access", "street": "", "city": "", "postcode": "", "dist": 9.9}];
-renderStations(initialStations);
+// Initial render + auto-refresh
+osmStations.forEach(function(s){s.sp95="unknown";s.prix="";s.maj=""});
+renderStations(osmStations);
 map.fitBounds(L.polyline(route).getBounds().pad(0.15));
+refreshData();
+setInterval(refreshData,600000);
 
-// Auto-refresh every 10 minutes
-setInterval(refreshData, 600000);
-
-// Open sheet on mobile with swipe
-var sheet = document.getElementById("sheet");
-var touchStartY = 0;
-sheet.addEventListener("touchstart",function(e){touchStartY=e.touches[0].clientY;});
-sheet.addEventListener("touchmove",function(e){
-  var dy = touchStartY - e.touches[0].clientY;
-  if(dy > 30) sheet.classList.add("open");
-  if(dy < -30) sheet.classList.remove("open");
-});
+if(isMobile){
+  var sh=document.getElementById("sheet"),tsy=0;
+  sh.addEventListener("touchstart",function(e){tsy=e.touches[0].clientY});
+  sh.addEventListener("touchmove",function(e){var d=tsy-e.touches[0].clientY;if(d>30)sh.classList.add("open");if(d<-30)sh.classList.remove("open")});
+}
 </script>
 </body>
 </html>
